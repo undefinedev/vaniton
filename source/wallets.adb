@@ -126,7 +126,7 @@ package body Wallets is
         "D5493F2C08DE20010935BDB31E1D74CD0B4D6C35E");
 
    function Get_Wallet_Address
-     (Public_Key : Byte_Array; Workchain : Integer_8 := 0;
+     (Public_Key : Byte_Array; Workchain : Integer_8 := 0; NetworkGlobalID : Integer_32 := 0;
       Kind       : Wallet_Kind := V3_R2; Test_Only : Boolean := False;
       Bounceable : Boolean     := True) return Address
    is
@@ -185,7 +185,9 @@ package body Wallets is
             Data := Empty_Cell;
             Write (Data, True);
             Write (Data, Unsigned_32 (0));
+            Write (Data, Unsigned_32 (698_983_191 + Integer (NetworkGlobalID)));
             Write (Data, Unsigned_32 (698_983_191 + Integer (Workchain)));
+            Write (Data, Unsigned_8 (0));
             Write (Data, Public_Key);
             Write (Data, False);
       end case;
