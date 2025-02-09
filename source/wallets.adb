@@ -198,7 +198,7 @@ package body Wallets is
                Xor_Result := Context_Part xor Unsigned_32(Network_Global_Id);
 
                -- Build V5R1 data cell
-               Write(Data, Unsigned_8(1), 1);   -- 1-bit signature flag (LSB first)
+               Write(Data, True);   -- 1-bit signature flag (LSB first)
                Write(Data, Unsigned_32(0));     -- Seqno
                Write(Data, Xor_Result);         -- Wallet ID
                Write(Data, Public_Key);         -- Public key
