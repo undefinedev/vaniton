@@ -2,9 +2,8 @@ name: CI linux
 
 on:
   push:
-    branches: [ master ]
-  release:
-    types: [created]
+    branches: [ test ]
+  
 
 jobs:
 
