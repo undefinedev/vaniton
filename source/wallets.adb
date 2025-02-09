@@ -171,12 +171,12 @@ package body Wallets is
          when Simple_R1 | Simple_R2 | Simple_R3 | V2_R1 | V2_R2 =>
             Write (Data, Unsigned_32 (0));
             Write (Data, Public_Key);
-         when V3_R1 | V3_R2 =>
+         when V3_R1 | V3_R2 | V5_R1 =>
             Data := Empty_Cell;
             Write (Data, Unsigned_32 (0));
             Write (Data, Unsigned_32 (698_983_191 + Integer (Workchain)));
             Write (Data, Public_Key);
-         when V4_R1 | V4_R2 | V5_R1 =>
+         when V4_R1 | V4_R2 =>
             Write (Data, Unsigned_32 (0));
             Write (Data, Unsigned_32 (698_983_191 + Integer (Workchain)));
             Write (Data, Public_Key);
