@@ -192,7 +192,8 @@ package body Wallets is
                -- Construct context value using unsigned types
                Context_Part := Shift_Left(1, 31) -- 1-bit flag
                   or Shift_Left(Unsigned_32(Workchain_Unsigned), 23) -- 8-bit workchain
-                  or Unsigned_32(16#0000007F#); -- 15-bit subwallet (0 in this case)
+                  or Shift_Left(Unsigned_32(0), 15) -- 15-bit subwallet (0 in this case)
+                  or Unsigned_32(0);
 
                -- Convert network ID to unsigned for XOR
                Xor_Result := Context_Part xor Unsigned_32(Network_Global_Id);
