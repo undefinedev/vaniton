@@ -22,9 +22,9 @@ jobs:
       shell: pwsh
       run: |
         choco install gnat
+        choco install gprbuild
         refreshenv
         gcc --version
-        gprbuild --version
 
     - name: Install alr
       shell: pwsh
