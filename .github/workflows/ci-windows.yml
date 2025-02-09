@@ -18,26 +18,10 @@ jobs:
       with:
         submodules: true
 
-    - name: Install GNAT and GPRBuild
-      shell: pwsh
-      run: |
-        choco install gnat
-        choco install gprbuild
-        refreshenv
-        gcc --version
-
-    - name: Install alr
-      shell: pwsh
-      run: |
-        choco install alire
-        refreshenv
-        alr version
-
-    - name: Set up Ada environment
-      shell: pwsh
-      run: |
-        alr toolchain --select
-        alr update
+    - name: Install toolchain
+      uses: ada-actions/toolchain@ce2021
+      with:
+        distrib: community
     
     - name: Install OpenSSL on MSYS2
       run: |

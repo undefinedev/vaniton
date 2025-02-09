@@ -200,9 +200,9 @@ package body Wallets is
             Write (Data, False);
          when V5_R1 =>
             Data := Empty_Cell;
-            Write (Data, True, 1); -- Boolean flag (1 bit)
-            Write (Data, Unsigned_32 (0), 32); -- Sequence number (32 bits)
-            Write (Data, Gen_Wallet_ID (-239, Workchain, 0, 0), 32); -- Wallet ID (32 bits)
+            Write (Data, True); -- Boolean flag (1 bit)
+            Write (Data, Unsigned_32 (0)); -- Sequence number (32 bits)
+            Write (Data, Gen_Wallet_ID (-239, Workchain, 0, 0)); -- Wallet ID (32 bits)
             Write (Data, Public_Key); -- Public Key (256 bits)
             Write (Data, False); -- Empty plugins dictionary
       end case;
