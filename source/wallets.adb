@@ -183,12 +183,32 @@ package body Wallets is
             Write (Data, Public_Key);
             Write (Data, False);
          when V5_R1 =>
-            Data := Empty_Cell;
-            Write (Data, True);
-            Write (Data, Unsigned_32 (0));
-            Write (Data, Unsigned_32 (698_983_191 + Integer (Workchain)));
-            Write (Data, Public_Key);
-            Write (Data, False);
+            declare
+               Network_Global_Id : Integer_32;
+               Context_Int       : Integer_32;
+               Xor_Result        : Unsigned_32;
+               Subwallet_Number  : constant Unsigned_16 := 0; -- Default subwallet
+               Workchain_8       : constant Integer_8 := Workchain;
+            begin
+               -- Determine network ID based on testnet flag
+               Network_Global_Id := (if Test_Only then -3 else -239);
+
+               -- Construct 32-bit context value
+               Context_Int := Shift_Left(1, 31) -- 1-bit flag
+                  or Shift_Left(Integer_32(Workchain_8), 23) -- 8-bit workchain
+                  or Integer_32(Subwallet_Number and 16#7FFF#); -- 15-bit subwallet
+
+               -- Calculate XOR with network ID
+               Xor_Result := Unsigned_32(Context_Int xor Network_Global_Id);
+
+               -- Build V5R1 data cell
+               Write(Data, Unsigned_1(1));     -- Signature allowed (1 bit)
+               Write(Data, Unsigned_32(0));    -- Seqno (32 bits)
+               Write(Data, Xor_Result);        -- Wallet ID (32 bits)
+               Write(Data, Public_Key);        -- Public key (256 bits)
+               Write(Data, False);             -- Empty plugins (1 bit)
+            end;
+            
       end case;
 
       Write (State_Init, State_Init_Array);
