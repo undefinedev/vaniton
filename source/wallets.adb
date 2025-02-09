@@ -143,6 +143,23 @@ package body Wallets is
          True, -- data
          False -- library
       );
+
+      -- Helper function to generate the Wallet ID
+      function Gen_Wallet_ID
+        (Network_Global_ID : Integer_32;
+         Workchain         : Integer_8;
+         Subwallet_Number  : Unsigned_16;
+         Wallet_Version    : Unsigned_8) return Unsigned_32
+      is
+         Context_ID : Unsigned_32 := 0;
+      begin
+         Context_ID := Context_ID or Shift_Left (1, 31); -- Set the leftmost bit to 1
+         Context_ID := Context_ID or Shift_Left (Unsigned_32 (Workchain), 23); -- Workchain (8 bits)
+         Context_ID := Context_ID or Shift_Left (Unsigned_32 (Wallet_Version), 15); -- Wallet Version (8 bits)
+         Context_ID := Context_ID or Unsigned_32 (Subwallet_Number); -- Subwallet Number (15 bits)
+         return Context_ID xor Unsigned_32 (Network_Global_ID); -- XOR with Network Global ID
+      end Gen_Wallet_ID;
+
    begin
       case Kind is
          when Simple_R1 =>
@@ -183,11 +200,9 @@ package body Wallets is
             Write (Data, False);
          when V5_R1 =>
             Data := Empty_Cell;
-            Write (Data, Unsigned_32 (0), 33); -- Sequence number (33 bits)
-            Write (Data, Unsigned_32 (-239), 32); -- Network Global ID (32 bits), -239 for mainnet
-            Write (Data, Unsigned_32 (Workchain), 8); -- Workchain (8 bits)
-            Write (Data, Unsigned_32 (0), 8); -- Wallet Version (8 bits)
-            Write (Data, Unsigned_32 (698_983_191), 32); -- Subwallet Number (32 bits)
+            Write (Data, True, 1); -- Boolean flag (1 bit)
+            Write (Data, Unsigned_32 (0), 32); -- Sequence number (32 bits)
+            Write (Data, Gen_Wallet_ID (-239, Workchain, 0, 0), 32); -- Wallet ID (32 bits)
             Write (Data, Public_Key); -- Public Key (256 bits)
             Write (Data, False); -- Empty plugins dictionary
       end case;
