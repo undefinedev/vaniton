@@ -76,6 +76,7 @@ begin
    Define_Alias (Config, "-wv4r1", "--wallet=V4_R1");
    Define_Alias (Config, "-wv4r2", "--wallet=V4_R2");
    Define_Alias (Config, "-wv4", "--wallet=V4_R2");
+   Define_Alias (Config, "-wv5r1", "--wallet=V5_R1");
 
    Getopt (Config);
 
