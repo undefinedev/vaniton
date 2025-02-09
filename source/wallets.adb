@@ -184,29 +184,25 @@ package body Wallets is
             Write (Data, False);
          when V5_R1 =>
             declare
-               Network_Global_Id : Integer_32;
-               Context_Int       : Integer_32;
-               Xor_Result        : Unsigned_32;
-               Subwallet_Number  : constant Unsigned_16 := 0; -- Default subwallet
-               Workchain_8       : constant Integer_8 := Workchain;
+               Network_Global_Id : Integer_32 := (-239);
+               Workchain_Unsigned : Unsigned_8 := Unsigned_8(Workchain);
+               Context_Part       : Unsigned_32;
+               Xor_Result         : Unsigned_32;
             begin
-               -- Determine network ID based on testnet flag
-               Network_Global_Id := (if Test_Only then -3 else -239);
+               -- Construct context value using unsigned types
+               Context_Part := Shift_Left(1, 31) -- 1-bit flag
+                  or Shift_Left(Unsigned_32(Workchain_Unsigned), 23) -- 8-bit workchain
+                  or Unsigned_32(16#0000007F#); -- 15-bit subwallet (0 in this case)
 
-               -- Construct 32-bit context value
-               Context_Int := Shift_Left(1, 31) -- 1-bit flag
-                  or Shift_Left(Integer_32(Workchain_8), 23) -- 8-bit workchain
-                  or Integer_32(Subwallet_Number and 16#7FFF#); -- 15-bit subwallet
-
-               -- Calculate XOR with network ID
-               Xor_Result := Unsigned_32(Context_Int xor Network_Global_Id);
+               -- Convert network ID to unsigned for XOR
+               Xor_Result := Context_Part xor Unsigned_32(Network_Global_Id);
 
                -- Build V5R1 data cell
-               Write(Data, Unsigned_1(1));     -- Signature allowed (1 bit)
-               Write(Data, Unsigned_32(0));    -- Seqno (32 bits)
-               Write(Data, Xor_Result);        -- Wallet ID (32 bits)
-               Write(Data, Public_Key);        -- Public key (256 bits)
-               Write(Data, False);             -- Empty plugins (1 bit)
+               Write(Data, Unsigned_8(1), 1);   -- 1-bit signature flag (LSB first)
+               Write(Data, Unsigned_32(0));     -- Seqno
+               Write(Data, Xor_Result);         -- Wallet ID
+               Write(Data, Public_Key);         -- Public key
+               Write(Data, False);              -- Empty plugins flag
             end;
             
       end case;
