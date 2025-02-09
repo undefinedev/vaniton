@@ -144,21 +144,39 @@ package body Wallets is
          False -- library
       );
 
-      -- Helper function to generate the Wallet ID
-      function Gen_Wallet_ID
-        (Network_Global_ID : Integer_32;
-         Workchain         : Integer_8;
-         Subwallet_Number  : Unsigned_16;
-         Wallet_Version    : Unsigned_8) return Unsigned_32
-      is
-         Context_ID : Unsigned_32 := 0;
+      function Create_V5R1_Data_Cell (
+         Public_Key : Byte_Array;  -- 32-byte Ed25519 public key
+         Workchain : Integer := 0  -- Default workchain
+      ) return Cell is
+         Data_Cell : Cell := New_Cell;
       begin
-         Context_ID := Context_ID or Shift_Left (1, 31); -- Set the leftmost bit to 1
-         Context_ID := Context_ID or Shift_Left (Unsigned_32 (Workchain), 23); -- Workchain (8 bits)
-         Context_ID := Context_ID or Shift_Left (Unsigned_32 (Wallet_Version), 15); -- Wallet Version (8 bits)
-         Context_ID := Context_ID or Unsigned_32 (Subwallet_Number); -- Subwallet Number (15 bits)
-         return Context_ID xor Unsigned_32 (Network_Global_ID); -- XOR with Network Global ID
-      end Gen_Wallet_ID;
+         -- 1. Store authentication flag (1 bit)
+         Append_Bit(Data_Cell, 1);  -- Allow signature-based auth
+
+         -- 2. Store initial seqno (32 bits)
+         Append_Uint(Data_Cell, 0, 32);
+
+         -- 3. Serialize Wallet ID (context and network ID)
+         declare
+            Wallet_Id_Cell : Cell := New_Cell;
+         begin
+            -- NetworkGlobalID: -239 (mainnet)
+            Append_Int(Wallet_Id_Cell, -239, 32);  
+            -- Context: workchain, subwallet, version
+            Append_Uint(Wallet_Id_Cell, Workchain, 8);
+            Append_Uint(Wallet_Id_Cell, 0, 32);  -- Subwallet number (default 0)
+            Append_String(Wallet_Id_Cell, "v5r1");  -- Wallet version
+            Append_Ref(Data_Cell, Wallet_Id_Cell);
+         end;
+
+         -- 4. Store public key (256 bits)
+         Append_Bytes(Data_Cell, Public_Key, 32);
+
+         -- 5. Plugins dictionary (empty by default)
+         Append_Bit(Data_Cell, 0);  -- No plugins
+
+         return Data_Cell;
+      end Create_V5R1_Data_Cell;
 
    begin
       case Kind is
@@ -199,12 +217,7 @@ package body Wallets is
             Write (Data, Public_Key);
             Write (Data, False);
          when V5_R1 =>
-            Data := Empty_Cell;
-            Write (Data, True); -- Boolean flag (1 bit)
-            Write (Data, Unsigned_32 (0)); -- Sequence number (32 bits)
-            Write (Data, Gen_Wallet_ID (-239, Workchain, 0, 0)); -- Wallet ID (32 bits)
-            Write (Data, Public_Key); -- Public Key (256 bits)
-            Write (Data, False); -- Empty plugins dictionary
+            Data := Create_V5R1_Data_Cell(Public_Key => Public_Key);
       end case;
 
       Write (State_Init, State_Init_Array);
