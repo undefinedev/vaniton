@@ -126,7 +126,7 @@ package body Wallets is
         "D5493F2C08DE20010935BDB31E1D74CD0B4D6C35E");
 
    function Get_Wallet_Address
-     (Public_Key : Byte_Array; Workchain : Integer_8 := 0; NetworkGlobalID : Integer_32 := 0;
+     (Public_Key : Byte_Array; Workchain : Integer_8 := 0;
       Kind       : Wallet_Kind := V3_R2; Test_Only : Boolean := False;
       Bounceable : Boolean     := True) return Address
    is
@@ -183,13 +183,13 @@ package body Wallets is
             Write (Data, False);
          when V5_R1 =>
             Data := Empty_Cell;
-            Write (Data, True);
-            Write (Data, Unsigned_32 (0));
-            Write (Data, Unsigned_32 (698_983_191 + Integer (NetworkGlobalID)));
-            Write (Data, Unsigned_32 (698_983_191 + Integer (Workchain)));
-            Write (Data, Unsigned_8 (0));
-            Write (Data, Public_Key);
-            Write (Data, False);
+            Write (Data, Unsigned_32 (0), 33); -- Sequence number (33 bits)
+            Write (Data, Unsigned_32 (-239), 32); -- Network Global ID (32 bits), -239 for mainnet
+            Write (Data, Unsigned_32 (Workchain), 8); -- Workchain (8 bits)
+            Write (Data, Unsigned_32 (0), 8); -- Wallet Version (8 bits)
+            Write (Data, Unsigned_32 (698_983_191), 32); -- Subwallet Number (32 bits)
+            Write (Data, Public_Key); -- Public Key (256 bits)
+            Write (Data, False); -- Empty plugins dictionary
       end case;
 
       Write (State_Init, State_Init_Array);
