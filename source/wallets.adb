@@ -185,13 +185,12 @@ package body Wallets is
          when V5_R1 =>
             declare
                Network_Global_Id : Integer_32 := (-239);
-               Workchain_Unsigned : Unsigned_32 := Integer (Workchain);
                Context_Part       : Unsigned_32;
                Xor_Result         : Unsigned_32;
             begin
                -- Construct context value using unsigned types
                Context_Part := Shift_Left(1, 31) -- 1-bit flag
-                  -- or Shift_Left(Unsigned_32(Workchain_Unsigned), 23) -- 8-bit workchain
+                  -- or Shift_Left(Integer (Workchain), 23) -- 8-bit workchain
                   -- or Shift_Left(Unsigned_32(0), 15) -- 15-bit subwallet (0 in this case)
                   or Unsigned_32(0);
 
