@@ -190,7 +190,7 @@ package body Wallets is
             begin
                -- Construct context value using unsigned types
                Context_Part := Shift_Left(1, 31) -- 1-bit flag
-                  -- or Shift_Left(Integer (Workchain), 23) -- 8-bit workchain
+                  or Shift_Left(698_983_191 + Integer (Workchain), 23) -- 8-bit workchain
                   -- or Shift_Left(Unsigned_32(0), 15) -- 15-bit subwallet (0 in this case)
                   or Unsigned_32(0);
 
